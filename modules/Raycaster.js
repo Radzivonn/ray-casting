@@ -85,7 +85,11 @@ export default class Raycaster {
 
       // projection
       depth *= Math.cos(playerAngle - currentAngle);
-      const projectionHeight = PROJECTION_COEFF / depth;
+      depth = Math.max(depth, 0.00001);
+      const projectionHeight = Math.min(
+        parseInt(PROJECTION_COEFF / depth, 10),
+        2 * HEIGHT,
+      );
       const color = 255 / (1 + depth * depth * COLOR_DEPTH_COEFF);
 
       this.ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
