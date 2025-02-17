@@ -6,10 +6,9 @@ import {
   WIDTH,
   HEIGHT,
   PROJECTION_COEFF,
-  COLOR_DEPTH_COEFF,
-  SCALE,
   DELTA_ANGLE,
-} from './settings.js';
+  RAYS_COLOR,
+} from '../../resources/settings.js';
 
 export default class Raycaster {
   constructor(ctx, map) {
@@ -18,7 +17,6 @@ export default class Raycaster {
   }
 
   raycast(playerX, playerY, playerAngle) {
-    this.ctx.beginPath();
     this.ctx.moveTo(
       Math.round(playerX / MAP_SCALE),
       Math.round(playerY / MAP_SCALE),
@@ -29,6 +27,7 @@ export default class Raycaster {
     let currentAngle = playerAngle - HALF_FOV;
 
     for (let ray = 0; ray < NUM_RAYS; ray++) {
+      let yv, xh, tileV, tileH, textureV, textureH;
       let sin_a = Math.sin(currentAngle);
       let cos_a = Math.cos(currentAngle);
       sin_a = sin_a ? sin_a : 0.000001;
@@ -41,9 +40,10 @@ export default class Raycaster {
 
       for (let i = 0; i < WIDTH; i += TILE) {
         depthVertical = (x - playerX) / cos_a;
-        const y = playerY + depthVertical * sin_a;
-        if (this.map.isCollide(x + dx, y)) {
-          this.ctx.lineTo(Math.round(x / MAP_SCALE), Math.round(y / MAP_SCALE));
+        yv = playerY + depthVertical * sin_a;
+        tileV = this.map.getWall(x + dx, yv);
+        if (tileV) {
+          textureV = tileV.name;
           break;
         }
         x += dx * TILE;
@@ -56,16 +56,20 @@ export default class Raycaster {
 
       for (let i = 0; i < HEIGHT; i += TILE) {
         depthHorizontal = (y - playerY) / sin_a;
-        const x = playerX + depthHorizontal * cos_a;
-        if (this.map.isCollide(x, y + dy)) {
-          this.ctx.lineTo(Math.round(x / MAP_SCALE), Math.round(y / MAP_SCALE));
+        xh = playerX + depthHorizontal * cos_a;
+        tileH = this.map.getWall(xh, y + dy);
+        if (tileH) {
+          textureH = tileH.name;
           break;
         }
         y += dy * TILE;
       }
 
-      // Drawing FOV lines on mini map
+      // Drawing walls and FOV lines on mini map
       let depth = Math.min(depthVertical, depthHorizontal);
+      let offset = depthVertical < depthHorizontal ? yv : xh;
+      let texture = depthVertical < depthHorizontal ? textureV : textureH;
+      offset = Math.round(offset) % TILE;
       let endX, endY;
 
       if (depth === depthVertical) {
@@ -83,32 +87,18 @@ export default class Raycaster {
         Math.round(endY / MAP_SCALE),
       );
 
-      // projection
       depth *= Math.cos(playerAngle - currentAngle);
       depth = Math.max(depth, 0.00001);
       const projectionHeight = Math.min(
-        parseInt(PROJECTION_COEFF / depth, 10),
+        Math.round(PROJECTION_COEFF / depth),
         2 * HEIGHT,
       );
-      const color = 255 / (1 + depth * depth * COLOR_DEPTH_COEFF);
 
-      this.ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
-      this.ctx.fillRect(
-        ray * SCALE,
-        Math.floor(HEIGHT / 2) - Math.floor(projectionHeight / 2),
-        SCALE,
-        projectionHeight,
-      );
+      this.map.drawWall(texture, projectionHeight, offset, ray);
 
       currentAngle += DELTA_ANGLE;
     }
-
-    this.ctx.lineTo(
-      Math.round(playerX / MAP_SCALE),
-      Math.round(playerY / MAP_SCALE),
-    );
-    this.ctx.closePath();
-    this.ctx.fillStyle = 'rgba(0, 149, 255, 0.75)';
+    this.ctx.fillStyle = RAYS_COLOR;
     this.ctx.fill();
   }
 }

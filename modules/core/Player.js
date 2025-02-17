@@ -1,4 +1,4 @@
-import { MAP_SCALE } from './settings.js';
+import { MAP_SCALE, PLAYER_COLOR } from '../../resources/settings.js';
 
 export default class Player {
   constructor(x, y, angle, speed, turningSpeed) {
@@ -9,27 +9,30 @@ export default class Player {
     this.turningSpeed = turningSpeed;
   }
 
-  movement = (key) => {
+  movement = (pressedKeys) => {
     const sin_a = Math.sin(this.angle);
     const cos_a = Math.cos(this.angle);
-    if (key === 'KeyW') {
+    if (pressedKeys.KeyW) {
       this.x += this.speed * cos_a;
       this.y += this.speed * sin_a;
     }
-    if (key === 'KeyA') {
+    if (pressedKeys.KeyA) {
       this.x += this.speed * sin_a;
       this.y += -this.speed * cos_a;
     }
-    if (key === 'KeyS') {
+    if (pressedKeys.KeyS) {
       this.x += -this.speed * cos_a;
       this.y += -this.speed * sin_a;
     }
-    if (key === 'KeyD') {
+    if (pressedKeys.KeyD) {
       this.x += -this.speed * sin_a;
       this.y += this.speed * cos_a;
     }
-    if (key === 'ArrowLeft') this.angle -= this.turningSpeed;
-    if (key === 'ArrowRight') this.angle += this.turningSpeed;
+  };
+
+  rotation = (pressedKeys) => {
+    if (pressedKeys.ArrowLeft) this.angle -= this.turningSpeed;
+    if (pressedKeys.ArrowRight) this.angle += this.turningSpeed;
   };
 
   draw(ctx) {
@@ -41,7 +44,7 @@ export default class Player {
       0,
       2 * Math.PI,
     );
-    ctx.fillStyle = 'blue';
+    ctx.fillStyle = PLAYER_COLOR;
     ctx.fill();
   }
 }

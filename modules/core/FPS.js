@@ -1,4 +1,4 @@
-import { WIDTH } from './settings.js';
+import { WIDTH } from '../../resources/settings.js';
 
 export default class FPS {
   constructor() {
