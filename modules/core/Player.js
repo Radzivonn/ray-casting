@@ -1,4 +1,4 @@
-import { MAP_SCALE, PLAYER_COLOR } from '../../resources/settings.js';
+import { MAP_SCALE, PLAYER_COLOR, TILE } from '../../resources/settings.js';
 
 export default class Player {
   constructor(x, y, angle, speed, turningSpeed) {
@@ -9,24 +9,32 @@ export default class Player {
     this.turningSpeed = turningSpeed;
   }
 
-  movement = (pressedKeys) => {
+  movement = (pressedKeys, map) => {
     const sin_a = Math.sin(this.angle);
     const cos_a = Math.cos(this.angle);
+    let newX = this.x;
+    let newY = this.y;
+
     if (pressedKeys.KeyW) {
-      this.x += this.speed * cos_a;
-      this.y += this.speed * sin_a;
+      newX += this.speed * cos_a;
+      newY += this.speed * sin_a;
     }
     if (pressedKeys.KeyA) {
-      this.x += this.speed * sin_a;
-      this.y += -this.speed * cos_a;
+      newX += this.speed * sin_a;
+      newY += -this.speed * cos_a;
     }
     if (pressedKeys.KeyS) {
-      this.x += -this.speed * cos_a;
-      this.y += -this.speed * sin_a;
+      newX += -this.speed * cos_a;
+      newY += -this.speed * sin_a;
     }
     if (pressedKeys.KeyD) {
-      this.x += -this.speed * sin_a;
-      this.y += this.speed * cos_a;
+      newX += -this.speed * sin_a;
+      newY += this.speed * cos_a;
+    }
+
+    if (!map.getWall(newX, newY)) {
+      this.x = newX;
+      this.y = newY;
     }
   };
 

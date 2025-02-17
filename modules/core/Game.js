@@ -69,7 +69,7 @@ export default class Game {
       this.fpsCounter.countFPS(timestamp);
       this.lastTimestamp = timestamp;
 
-      this.player.movement(this.pressedKeys);
+      this.player.movement(this.pressedKeys, this.map);
       this.player.rotation(this.pressedKeys);
       this.drawScene();
     }
